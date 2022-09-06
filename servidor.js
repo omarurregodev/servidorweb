@@ -1,4 +1,5 @@
 const express = require("express");
+const fs = require("fs");
 
 const app = express();
 
@@ -7,23 +8,54 @@ const PORT = 8080;
 let contador = 0;
 
 
+class Contenedor {
+
+    async getProductById(id) {
+        try {
+            const contenido = await this.getProducts();
+            const findById = contenido.filter(data => data.id === id);
+            return findById;
+        } catch (e) {
+            console.log("error en el getProductById " + e);
+        }
+    }
+
+    async getProducts() {
+        try {
+            const contenido = await fs.promises.readFile('./productos.txt', 'utf-8');
+            console.log(contenido);
+            return JSON.parse(contenido);
+        } catch (e) {
+            console.log("error en el getProducts " + e);
+        }
+    }
+    
+ }
+
+const contenedor = new Contenedor();
+
 
 const server = app.listen(PORT, ()=>{
-    console.log("servidor iniciado");
+    try {
+        console.log(`servidor iniciado en puerto: ${PORT}`);
+    } catch (e) {
+        console.log('Error iniciando Servidor' + e);
+    }
 })
 
-app.get("/", (req, res) => {
-    contador++;
-    res.send(`<h1 style='color: blue'>Bienvenidos al servidor Express</h1>`)
+app.get("/productos", (req, res) => {   
+    contenedor.getProducts().then(productos => {
+        res.send(productos)
+    })
 })
 
-app.get("/visitas", (req, res) => {
-    res.send(`<h2 style='color:red'>Este es el número de visitas ${contador}</h2>`)
+app.get("/productosRandom", (req, res) => {
+    function randomIntervalo(min, max) { // min and max included 
+        return Math.floor(Math.random() * (max - min + 1) + min)
+    }
+    const randomId = randomIntervalo(1, 4)
+    //console.log(randomId);
+    contenedor.getProductById(randomId).then(producto => {
+        res.send(producto)
+    })
 })
-
-// app.get("/fechayhora", (req, res) => {
-//     contador++;
-//     let fecha = new Date();
-//     res.send(`<h2 style='color:red'>La fecha es: ${fecha.toLocaleDateString()} y la hora es: ${fecha.toLocaleTimeString}</h2>`)
-// })
-
