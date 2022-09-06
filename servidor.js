@@ -5,8 +5,6 @@ const app = express();
 
 const PORT = 8080;
 
-let contador = 0;
-
 
 class Contenedor {
 
